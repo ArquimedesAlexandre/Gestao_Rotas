@@ -1,0 +1,2 @@
+admin,1234,ADMIN
+user,1234,USER

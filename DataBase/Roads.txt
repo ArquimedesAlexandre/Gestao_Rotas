@@ -1,0 +1,5 @@
+Luanda,Bengo,60
+Luanda,Cuanza Sul,300
+Bengo,Uige,250
+Huambo,Benguela,160
+Uige,Zaire,180
