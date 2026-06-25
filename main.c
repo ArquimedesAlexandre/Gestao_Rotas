@@ -21,39 +21,79 @@ void menu_user(void)
     printf("4 - Menor caminho\n");
     printf("0 - Logout\n");
 }
-
 void get_users(t_user *admin, t_user *user)
 {
     FILE *fp;
-    char username[50];
-    char password[50];
+    char line[100];
     char role[20];
 
-    fp = fopen("users.txt", "r");
+    fp = fopen("DataBase/Login.txt", "r");
     if (!fp)
-        return ;
+    {
+        printf("Erro ao abrir Login.txt\n");
+        return;
+    }
 
-    fscanf(fp,
-        "%49[^,],%49[^,],%19s",
-        username,
-        password,
-        role);
+    if (fgets(line, sizeof(line), fp))
+    {
+        sscanf(line,
+            "%49[^,],%49[^,],%19s",
+            admin->username,
+            admin->password,
+            role);
+        admin->role = ADMIN;
+    }
 
-    strcpy(admin->username, username);
-    strcpy(admin->password, password);
-    admin->role = ADMIN;
-
-    fscanf(fp,
-        "%49[^,],%49[^,],%19s",
-        username,
-        password,
-        role);
-
-    strcpy(user->username, username);
-    strcpy(user->password, password);
-    user->role = USER;
+    if (fgets(line, sizeof(line), fp))
+    {
+        sscanf(line,
+            "%49[^,],%49[^,],%19s",
+            user->username,
+            user->password,
+            role);
+        user->role = USER;
+    }
 
     fclose(fp);
+}
+
+
+int find_province(t_graph *graph, char *name)
+{
+    int i;
+
+    i = 0;
+    while (i < graph->count)
+    {
+        if (strcmp(graph->provinces[i].name, name) == 0)
+            return (i);
+        i++;
+    }
+    return (-1);
+}
+
+void add_road(t_graph *graph,
+              char *src,
+              char *dest,
+              int distance)
+{
+    t_edge *new;
+    int source;
+    int destination;
+
+    source = find_province(graph, src);
+    destination = find_province(graph, dest);
+
+    if (source == -1 || destination == -1)
+        return ;
+
+    new = malloc(sizeof(t_edge));
+
+    new->dest = destination;
+    new->distance = distance;
+
+    new->next = graph->provinces[source].roads;
+    graph->provinces[source].roads = new;
 }
 
 void load_roads(t_graph *graph)
@@ -65,7 +105,7 @@ void load_roads(t_graph *graph)
     char dest[50];
     int distance;
 
-    fp = fopen("roads.txt", "r");
+    fp = fopen("DataBase/Roads.txt", "r");
     if (!fp)
         return ;
 
@@ -82,12 +122,19 @@ void load_roads(t_graph *graph)
     fclose(fp);
 }
 
+void add_province(t_graph *graph, char *name)
+{
+    strcpy(graph->provinces[graph->count].name, name);
+    graph->provinces[graph->count].roads = NULL;
+    graph->count++;
+}
+
 void load_provinces(t_graph *graph)
 {
     FILE *fp;
     char line[100];
 
-    fp = fopen("provinces.txt", "r");
+    fp = fopen("DataBase/Provinces.txt", "r");
     if (!fp)
         return ;
 
@@ -118,16 +165,26 @@ int login(t_user account)
     char username[50];
     char password[50];
 
-    printf("Username: ");
-    scanf("%49s", username);
+    while (1)
+    {
+        printf("Username (0 para sair): ");
+        scanf("%49s", username);
 
-    printf("Password: ");
-    scanf("%49s", password);
+        if (strcmp(username, "0") == 0)
+            return (0);
 
-    if (strcmp(username, account.username) == 0
-        && strcmp(password, account.password) == 0)
-        return (1);
-    return (0);
+        printf("Password: ");
+        scanf("%49s", password);
+
+        if (strcmp(username, account.username) == 0
+            && strcmp(password, account.password) == 0)
+        {
+            printf("Login efetuado com sucesso!\n");
+            return (1);
+        }
+
+        printf("Credenciais invalidas! Tente novamente.\n\n");
+    }
 }
 
 
@@ -139,7 +196,7 @@ int main(void)
     int     tipo_login;
 
     load_datas(&admin, &user, &graph);
-
+    printf("Dados carregados com sucesso");
     printf("===== SISTEMA DE GESTAO DE ROTAS =====\n");
     printf("1 - Admin\n");
     printf("2 - User\n");
