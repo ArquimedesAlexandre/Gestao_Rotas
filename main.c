@@ -3,12 +3,11 @@
 void menu_admin(void)
 {
     printf("\n===== MENU ADMIN =====\n");
-    printf("1 - Adicionar estrada\n");
-    printf("2 - Remover estrada\n");
-    printf("3 - Atualizar distancia\n");
-    printf("4 - Listar provincias\n");
-    printf("5 - Mostrar grafo\n");
-    printf("6 - Guardar dados\n");
+    printf("1 - Monitorizar Rede\n");
+    printf("2 - Cadastrar Província\n");
+    printf("3 - Criar ou atualizar ligação rodoviaria\n");
+    printf("4 - Bloquear rota\n");
+    printf("5 - Guardar dados\n");
     printf("0 - Logout\n");
 }
 
@@ -21,42 +20,56 @@ void menu_user(void)
     printf("4 - Menor caminho\n");
     printf("0 - Logout\n");
 }
+
+
 void get_users(t_user *admin, t_user *user)
 {
-    FILE *fp;
-    char line[100];
-    char role[20];
+    FILE    *fp;
+    char    line[200];
+    char    role[20];
+    char    cwd[256];
+
+    getcwd(cwd, sizeof(cwd));
+    printf("Diretório atual: %s\n", cwd);
 
     fp = fopen("DataBase/Login.txt", "r");
     if (!fp)
     {
-        printf("Erro ao abrir Login.txt\n");
+        perror("Erro ao abrir Login.txt");
         return;
     }
 
+    printf("\n===== CONTEÚDO DO FICHEIRO =====\n");
     if (fgets(line, sizeof(line), fp))
     {
+        printf("Linha 1: %s", line);
+
         sscanf(line,
             "%49[^,],%49[^,],%19s",
             admin->username,
             admin->password,
             role);
-        admin->role = ADMIN;
     }
 
     if (fgets(line, sizeof(line), fp))
     {
+        printf("Linha 2: %s", line);
         sscanf(line,
             "%49[^,],%49[^,],%19s",
             user->username,
             user->password,
             role);
-        user->role = USER;
     }
 
     fclose(fp);
-}
 
+    printf("\n===== DADOS CARREGADOS =====\n");
+    printf("Admin -> username='%s' password='%s'\n",
+        admin->username, admin->password);
+
+    printf("User  -> username='%s' password='%s'\n",
+        user->username, user->password);
+}
 
 int find_province(t_graph *graph, char *name)
 {
@@ -124,6 +137,11 @@ void load_roads(t_graph *graph)
 
 void add_province(t_graph *graph, char *name)
 {
+     if (graph->count >= MAX_PROVINCES)
+    {
+        printf("Erro: numero maximo de provincias excedido!\n");
+        return;
+    }
     strcpy(graph->provinces[graph->count].name, name);
     graph->provinces[graph->count].roads = NULL;
     graph->count++;
@@ -164,25 +182,22 @@ int login(t_user account)
 {
     char username[50];
     char password[50];
+    int c;
 
     while (1)
     {
         printf("Username (0 para sair): ");
         scanf("%49s", username);
-
         if (strcmp(username, "0") == 0)
             return (0);
 
         printf("Password: ");
         scanf("%49s", password);
-
-        if (strcmp(username, account.username) == 0
-            && strcmp(password, account.password) == 0)
+        if (strcmp(username, account.username) == 0 && strcmp(password, account.password) == 0)
         {
             printf("Login efetuado com sucesso!\n");
             return (1);
         }
-
         printf("Credenciais invalidas! Tente novamente.\n\n");
     }
 }
@@ -194,18 +209,19 @@ int main(void)
     t_user  user;
     t_graph graph;
     int     tipo_login;
+    int c;
 
     load_datas(&admin, &user, &graph);
-    printf("Dados carregados com sucesso");
+    printf("Dados carregados com sucesso]\n");
     printf("===== SISTEMA DE GESTAO DE ROTAS =====\n");
     printf("1 - Admin\n");
     printf("2 - User\n");
     printf("0 - Sair\n");
 
     scanf("%d", &tipo_login);
-
     if (tipo_login == 1)
     {
+
         if (login(admin))
         {
            int opcao;
@@ -217,22 +233,19 @@ int main(void)
                 switch (opcao)
                 {
                     case 1:
-                        printf("Adicionar estrada\n");
+                        monitorar_rede(&graph);
                         break;
                     case 2:
-                        printf("Remover estrada\n");
+                        cadastrar_provincia(&graph);
                         break;
                     case 3:
-                        printf("Atualizar distancia\n");
+                        criar_ou_atualizar_ligacao(&graph);
                         break;
                     case 4:
-                        printf("Listar provincias\n");
+                        bloquear_rota(&graph);
                         break;
                     case 5:
-                        printf("Mostrar grafo\n");
-                        break;
-                    case 6:
-                        printf("Guardar dados\n");
+                        guardar_dados(&graph);
                         break;
                     case 0:
                         printf("Logout efetuado.\n");
@@ -256,20 +269,19 @@ int main(void)
                 menu_user();
                 printf("Opcao: ");
                 scanf("%d", &opcao);
-
                 switch (opcao)
                 {
                     case 1:
-                        printf("Listar provincias\n");
+                        listar_provincias(&graph);
                         break;
                     case 2:
-                        printf("Mostrar mapa\n");
+                        mostrar_mapa(&graph);
                         break;
                     case 3:
-                        printf("Procurar rota\n");
+                        procurar_rota(&graph);
                         break;
                     case 4:
-                        printf("Menor caminho\n");
+                        menor_caminho(&graph);
                         break;
                     case 0:
                         printf("Logout efetuado.\n");
@@ -281,7 +293,7 @@ int main(void)
             } while (opcao != 0);
         }
         else
-            printf("Credenciais invalidas!\n");
+        printf("Credenciais invalidas!\n");
     }
     return (0);
 }
