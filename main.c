@@ -39,10 +39,8 @@ void get_users(t_user *admin, t_user *user)
         return;
     }
 
-    printf("\n===== CONTEÚDO DO FICHEIRO =====\n");
     if (fgets(line, sizeof(line), fp))
     {
-        printf("Linha 1: %s", line);
 
         sscanf(line,
             "%49[^,],%49[^,],%19s",
@@ -53,7 +51,6 @@ void get_users(t_user *admin, t_user *user)
 
     if (fgets(line, sizeof(line), fp))
     {
-        printf("Linha 2: %s", line);
         sscanf(line,
             "%49[^,],%49[^,],%19s",
             user->username,
@@ -62,13 +59,6 @@ void get_users(t_user *admin, t_user *user)
     }
 
     fclose(fp);
-
-    printf("\n===== DADOS CARREGADOS =====\n");
-    printf("Admin -> username='%s' password='%s'\n",
-        admin->username, admin->password);
-
-    printf("User  -> username='%s' password='%s'\n",
-        user->username, user->password);
 }
 
 int find_province(t_graph *graph, char *name)
@@ -212,7 +202,7 @@ int main(void)
     int c;
 
     load_datas(&admin, &user, &graph);
-    printf("Dados carregados com sucesso]\n");
+    printf("Dados carregados com sucesso\n");
     printf("===== SISTEMA DE GESTAO DE ROTAS =====\n");
     printf("1 - Admin\n");
     printf("2 - User\n");
@@ -221,7 +211,6 @@ int main(void)
     scanf("%d", &tipo_login);
     if (tipo_login == 1)
     {
-
         if (login(admin))
         {
            int opcao;
@@ -233,19 +222,19 @@ int main(void)
                 switch (opcao)
                 {
                     case 1:
-                        monitorar_rede(&graph);
+                        //monitorar_rede(&graph);
                         break;
                     case 2:
-                        cadastrar_provincia(&graph);
+                        //cadastrar_provincia(&graph);
                         break;
                     case 3:
-                        criar_ou_atualizar_ligacao(&graph);
+                        //criar_ou_atualizar_ligacao(&graph);
                         break;
                     case 4:
-                        bloquear_rota(&graph);
+                        //bloquear_rota(&graph);
                         break;
                     case 5:
-                        guardar_dados(&graph);
+                        //guardar_dados(&graph);
                         break;
                     case 0:
                         printf("Logout efetuado.\n");
@@ -272,16 +261,16 @@ int main(void)
                 switch (opcao)
                 {
                     case 1:
-                        listar_provincias(&graph);
+                        //listar_provincias(&graph);
                         break;
                     case 2:
-                        mostrar_mapa(&graph);
+                        //mostrar_mapa(&graph);
                         break;
                     case 3:
-                        procurar_rota(&graph);
+                        //procurar_rota(&graph);
                         break;
                     case 4:
-                        menor_caminho(&graph);
+                        //menor_caminho(&graph);
                         break;
                     case 0:
                         printf("Logout efetuado.\n");
