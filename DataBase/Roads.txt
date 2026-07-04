@@ -1,5 +1,5 @@
-Luanda,Bengo,60
-Luanda,Cuanza Sul,300
-Bengo,Uige,250
-Huambo,Benguela,160
-Uige,Zaire,180
+Luanda,Bengo,60,Active
+Luanda,Cuanza Sul,300,Active
+Bengo,Uige,250,Active
+Huambo,Benguela,160,Active
+Uige,Zaire,180,Active

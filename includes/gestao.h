@@ -35,6 +35,7 @@ typedef struct s_edge
 {
 	int				dest;
 	int				distance;
+	int				state;
 	struct s_edge	*next;
 }	t_edge;
 
@@ -45,6 +46,7 @@ typedef struct s_vertex
 {
 	char	name[MAX_NAME];
 	t_edge	*roads;
+	int	state;
 }	t_vertex;
 
 /*
