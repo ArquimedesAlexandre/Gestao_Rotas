@@ -13,10 +13,8 @@ O sistema está organizado por perfis de acesso:
 ## Uso de IA
 Foi usada IA como apoio técnico durante o desenvolvimento para:
 
-- identificar e corrigir erros de compilação;
 - reorganizar o código em ficheiros separados;
-- melhorar o fluxo de login e logout;
-- ajustar a leitura de dados introduzidos pelo utilizador;
+- ajustar a compreender conceitos;
 - ajudar na escrita desta documentação.
 
 A IA foi usada como ferramenta de apoio e validação, não como substituto do trabalho de programação e compreensão do código.
