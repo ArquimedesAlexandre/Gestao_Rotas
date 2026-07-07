@@ -58,4 +58,7 @@ typedef struct s_graph
 	t_vertex	provinces[MAX_PROVINCES];
 }	t_graph;
 
+int find_province(t_graph *graph, char *name);
+t_edge *find_road(t_graph *graph, int source, int destination);
+
 #endif

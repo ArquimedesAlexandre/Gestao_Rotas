@@ -17,6 +17,17 @@ static const char *state_to_text(int state)
     return ("Active");
 }
 
+static void read_line(char *buffer, size_t size)
+{
+    if (!fgets(buffer, size, stdin))
+    {
+        buffer[0] = '\0';
+        return;
+    }
+    buffer[strcspn(buffer, "\n")] = '\0';
+    buffer[strcspn(buffer, "\r")] = '\0';
+}
+
 static void print_path(int prev[MAX_PROVINCES], int source, int destination, t_graph *graph)
 {
     int path[MAX_PROVINCES];
@@ -198,7 +209,6 @@ void mostrar_mapa(t_graph *graph)
     while (i < graph->count)
     {
         t_edge *road = graph->provinces[i].roads;
-
         while (road)
         {
             if (i < road->dest)
@@ -229,9 +239,9 @@ void procurar_rota(t_graph *graph)
     int i;
 
     printf("Digite a provincia de origem: ");
-    scanf("%99s", src);
+    scanf(" %99[^\n]", src);
     printf("Digite a provincia de destino: ");
-    scanf("%99s", dest);
+    scanf(" %99[^\n]", dest);
     start = find_province(graph, src);
     target = find_province(graph, dest);
     if (start == -1 || target == -1)
@@ -441,10 +451,14 @@ void add_road(t_graph *graph,
               int distance,
               int state)
 {
+    //debug
+
+
     t_edge *new;
     int source;
     int destination;
     t_edge *existing;
+
 
     source = find_province(graph, src);
     destination = find_province(graph, dest);
@@ -625,9 +639,9 @@ void    bloquear_rota(t_graph *graph){
     t_edge *reverse_road;
 
     printf("digite o nome da provincia de origem: ");
-    scanf("%99s", src);
+    read_line(src, sizeof(src));
     printf("digite o nome da provincia de destino: ");
-    scanf("%99s", dest);
+    read_line(dest, sizeof(dest));
 
     pos_src = find_province(graph, src);
     pos_dest = find_province(graph, dest);
