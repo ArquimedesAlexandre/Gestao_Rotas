@@ -1,0 +1,48 @@
+RELATORIO DA REDE
+Total de provincias: 19
+Total de rotas: 5
+Rotas bloqueadas: 1
+
+Provincia: Luanda
+  Luanda <-> Cuanza Sul | 300 km | Blocked
+  Luanda <-> Bengo | 60 km | Active
+
+Provincia: Bengo
+  Bengo <-> Uíge | 250 km | Active
+
+Provincia: Benguela
+  Benguela <-> Huambo | 160 km | Active
+
+Provincia: Bié
+
+Provincia: Cabinda
+
+Provincia: Cuando Cubango
+
+Provincia: Cuanza Norte
+
+Provincia: Cuanza Sul
+
+Provincia: Cunene
+
+Provincia: Huambo
+
+Provincia: Huíla
+
+Provincia: Luena
+
+Provincia: Lunda Norte
+
+Provincia: Lunda Sul
+
+Provincia: Malanje
+
+Provincia: Moxico
+
+Provincia: Namibe
+
+Provincia: Uíge
+  Uíge <-> Zaire | 180 km | Active
+
+Provincia: Zaire
+

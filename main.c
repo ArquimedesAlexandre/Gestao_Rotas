@@ -28,6 +28,85 @@ static void read_line(char *buffer, size_t size)
     buffer[strcspn(buffer, "\r")] = '\0';
 }
 
+static int ascii_lower(int c)
+{
+    if (c >= 'A' && c <= 'Z')
+        return (c + ('a' - 'A'));
+    return (c);
+}
+
+static int normalized_char(const unsigned char **text)
+{
+    unsigned char c;
+    unsigned char next;
+
+    while (**text == ' ' || **text == '\t')
+        (*text)++;
+    c = **text;
+    if (c == '\0')
+        return (-1);
+    if (c < 128)
+    {
+        (*text)++;
+        return (ascii_lower(c));
+    }
+    if (c == 0xC3 && (*text)[1] != '\0')
+    {
+        next = (*text)[1];
+        (*text) += 2;
+        if (next == 0x81 || next == 0x80 || next == 0x82 || next == 0x83 || next == 0x84
+            || next == 0xA1 || next == 0xA0 || next == 0xA2 || next == 0xA3 || next == 0xA4)
+            return ('a');
+        if (next == 0x89 || next == 0x88 || next == 0x8A || next == 0xA9 || next == 0xA8 || next == 0xAA)
+            return ('e');
+        if (next == 0x8D || next == 0x8C || next == 0xAD || next == 0xAC)
+            return ('i');
+        if (next == 0x93 || next == 0x92 || next == 0x94 || next == 0x95
+            || next == 0xB3 || next == 0xB2 || next == 0xB4 || next == 0xB5)
+            return ('o');
+        if (next == 0x9A || next == 0x99 || next == 0xBA || next == 0xB9)
+            return ('u');
+        if (next == 0x87 || next == 0xA7)
+            return ('c');
+        return (ascii_lower(next));
+    }
+    (*text)++;
+    if (c == 0xC1 || c == 0xC0 || c == 0xC2 || c == 0xC3 || c == 0xC4
+        || c == 0xE1 || c == 0xE0 || c == 0xE2 || c == 0xE3 || c == 0xE4)
+        return ('a');
+    if (c == 0xC9 || c == 0xC8 || c == 0xCA || c == 0xE9 || c == 0xE8 || c == 0xEA)
+        return ('e');
+    if (c == 0xCD || c == 0xCC || c == 0xED || c == 0xEC)
+        return ('i');
+    if (c == 0xD3 || c == 0xD2 || c == 0xD4 || c == 0xD5 || c == 0xF3 || c == 0xF2 || c == 0xF4 || c == 0xF5)
+        return ('o');
+    if (c == 0xDA || c == 0xD9 || c == 0xFA || c == 0xF9)
+        return ('u');
+    if (c == 0xC7 || c == 0xE7)
+        return ('c');
+    return (c);
+}
+
+static int province_name_equals(const char *left, const char *right)
+{
+    const unsigned char *a;
+    const unsigned char *b;
+    int ca;
+    int cb;
+
+    a = (const unsigned char *)left;
+    b = (const unsigned char *)right;
+    while (1)
+    {
+        ca = normalized_char(&a);
+        cb = normalized_char(&b);
+        if (ca != cb)
+            return (0);
+        if (ca == -1)
+            return (1);
+    }
+}
+
 static void print_path(int prev[MAX_PROVINCES], int source, int destination, t_graph *graph)
 {
     int path[MAX_PROVINCES];
@@ -277,6 +356,13 @@ void procurar_rota(t_graph *graph)
     }
     if (!visited[target])
     {
+        t_edge *direct = find_road(graph, start, target);
+
+        if (direct && direct->state)
+        {
+            printf("Existe uma rota direta entre essas provincias, mas esta bloqueada!\n");
+            return;
+        }
         printf("Nao existe rota ativa entre essas provincias!\n");
         return;
     }
@@ -297,9 +383,9 @@ void menor_caminho(t_graph *graph)
     int step;
 
     printf("Digite a provincia de origem: ");
-    scanf("%99s", src);
+    scanf(" %99[^\n]", src);
     printf("Digite a provincia de destino: ");
-    scanf("%99s", dest);
+    scanf(" %99[^\n]", dest);
     start = find_province(graph, src);
     target = find_province(graph, dest);
     if (start == -1 || target == -1)
@@ -424,7 +510,7 @@ int find_province(t_graph *graph, char *name)
     i = 0;
     while (i < graph->count)
     {
-        if (strcmp(graph->provinces[i].name, name) == 0)
+        if (province_name_equals(graph->provinces[i].name, name))
             return (i);
         i++;
     }
@@ -451,8 +537,6 @@ void add_road(t_graph *graph,
               int distance,
               int state)
 {
-    //debug
-
 
     t_edge *new;
     int source;
@@ -607,7 +691,7 @@ void    cadastrar_provincia(t_graph *graph){
     char name[100];
 
     printf("Digite o nome da nova provincia: ");
-    scanf("%99s", name);
+    scanf(" %99[^\n]", name);
     add_province(graph, name);
 }
 
@@ -616,16 +700,25 @@ void    criar_ligacao(t_graph *graph){
     char dest[100];
     int distance;
     int state;
+    int pos_src;
+    int pos_dest;
 
     printf("Digite o nome da provincia de origem: ");
-    scanf("%99s", src);
+    scanf(" %99[^\n]", src);
     printf("Digite o nome da provincia de destino: ");
-    scanf("%99s", dest);
+    scanf(" %99[^\n]", dest);
     printf("Digite a distancia entre as provincias: ");
     scanf("%d", &distance);
     printf("Digite o estado da rota (0 - normal, 1 - bloqueada): ");
     scanf("%d", &state);
 
+    pos_src = find_province(graph, src);
+    pos_dest = find_province(graph, dest);
+    if (pos_src == -1 || pos_dest == -1)
+    {
+        printf("O nome de uma das provincias nao existe!\n");
+        return;
+    }
     add_road(graph, src, dest, distance, state);
     add_road(graph, dest, src, distance, state);
 }
@@ -639,9 +732,9 @@ void    bloquear_rota(t_graph *graph){
     t_edge *reverse_road;
 
     printf("digite o nome da provincia de origem: ");
-    read_line(src, sizeof(src));
+    scanf(" %99[^\n]", src);
     printf("digite o nome da provincia de destino: ");
-    read_line(dest, sizeof(dest));
+    scanf(" %99[^\n]", dest);
 
     pos_src = find_province(graph, src);
     pos_dest = find_province(graph, dest);
@@ -670,90 +763,92 @@ int main(void)
     t_user  user;
     t_graph graph;
     int     tipo_login;
-    int c;
 
     load_datas(&admin, &user, &graph);
     printf("Dados carregados com sucesso\n");
-    printf("===== SISTEMA DE GESTAO DE ROTAS =====\n");
-    printf("1 - Admin\n");
-    printf("2 - User\n");
-    printf("0 - Sair\n");
-
-    scanf("%d", &tipo_login);
-    if (tipo_login == 1)
+    while (1)
     {
-        if (login(admin))
-        {
-           int opcao;
-            do
-            {
-                menu_admin();
-                printf("Opcao: ");
-                scanf("%d", &opcao);
-                switch (opcao)
-                {
-                    case 1:
-                        monitorar_rede(&graph);
-                        break;
-                    case 2:
-                        cadastrar_provincia(&graph);
-                        break;
-                    case 3:
-                        criar_ligacao(&graph);
-                        break;
-                    case 4:
-                        bloquear_rota(&graph);
-                        break;
-                    case 5:
-                        guardar_dados(&graph);
-                        break;
-                    case 0:
-                        printf("Logout efetuado.\n");
-                        break;
-                    default:
-                        printf("Opcao invalida.\n");
-                }
+        printf("===== SISTEMA DE GESTAO DE ROTAS =====\n");
+        printf("1 - Admin\n");
+        printf("2 - User\n");
+        printf("0 - Sair\n");
 
-            } while (opcao != 0);
-        }
-        else
-            printf("Credenciais invalidas!\n");
-    }
-   else if (tipo_login == 2)
-    {
-        if (login(user))
+        scanf("%d", &tipo_login);
+        if (tipo_login == 0)
+            break;
+        if (tipo_login == 1)
         {
-            int opcao;
-            do
+            if (login(admin))
             {
-                menu_user();
-                printf("Opcao: ");
-                scanf("%d", &opcao);
-                switch (opcao)
+                int opcao;
+                do
                 {
-                    case 1:
-                        listar_provincias(&graph);
-                        break;
-                    case 2:
-                        mostrar_mapa(&graph);
-                        break;
-                    case 3:
-                        procurar_rota(&graph);
-                        break;
-                    case 4:
-                        menor_caminho(&graph);
-                        break;
-                    case 0:
-                        printf("Logout efetuado.\n");
-                        break;
-                    default:
-                        printf("Opcao invalida.\n");
-                }
-
-            } while (opcao != 0);
+                    menu_admin();
+                    printf("Opcao: ");
+                    scanf("%d", &opcao);
+                    switch (opcao)
+                    {
+                        case 1:
+                            monitorar_rede(&graph);
+                            break;
+                        case 2:
+                            cadastrar_provincia(&graph);
+                            break;
+                        case 3:
+                            criar_ligacao(&graph);
+                            break;
+                        case 4:
+                            bloquear_rota(&graph);
+                            break;
+                        case 5:
+                            guardar_dados(&graph);
+                            break;
+                        case 0:
+                            printf("Logout efetuado.\n");
+                            break;
+                        default:
+                            printf("Opcao invalida.\n");
+                    }
+                } while (opcao != 0);
+            }
+            else
+                printf("Credenciais invalidas!\n");
         }
-        else
-        printf("Credenciais invalidas!\n");
+        else if (tipo_login == 2)
+        {
+            if (login(user))
+            {
+                int opcao;
+                do
+                {
+                    menu_user();
+                    printf("Opcao: ");
+                    scanf("%d", &opcao);
+                    switch (opcao)
+                    {
+                        case 1:
+                            listar_provincias(&graph);
+                            break;
+                        case 2:
+                            mostrar_mapa(&graph);
+                            break;
+                        case 3:
+                            procurar_rota(&graph);
+                            break;
+                        case 4:
+                            menor_caminho(&graph);
+                            break;
+                        case 0:
+                            printf("Logout efetuado.\n");
+                            break;
+                        default:
+                            printf("Opcao invalida.\n");
+                    }
+                } while (opcao != 0);
+            }
+            else
+                printf("Credenciais invalidas!\n");
+        }
     }
     return (0);
 }
