@@ -1,5 +1,6 @@
-Luanda,Cuanza Sul,300,Blocked
+Luanda,omega,7383,Active
 Luanda,Bengo,60,Active
-Bengo,Uíge,250,Active
+Luanda,Cuanza Sul,300,Blocked
+Bengo,Uige,250,Active
 Benguela,Huambo,160,Active
-Uíge,Zaire,180,Active
+Uige,Zaire,180,Active
